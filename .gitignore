@@ -1,3 +1,11 @@
-.env
-.venv
-__pycache__
+*
+!.gitignore
+
+!docker-compose.yaml
+!requirements.txt
+
+!/app
+!app/*
+
+!/app/plugin
+!app/plugin/*

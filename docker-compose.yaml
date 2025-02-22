@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  bot:
+    image: python:3.9
+    container_name: python_bot
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    networks:
+      - rc_network
+    depends_on:
+      - mongodb
+    command: sh -c "pip install -r requirements.txt && python bot.py"
+
+  mongodb:
+    image: mongo:latest
+    # image: mongo:8.0-rc
+    container_name: mongodb
+    networks:
+      - rc_network
+    volumes:
+      - mongo-data:/data/db
+networks:
+  rc_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  mongo-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./.data

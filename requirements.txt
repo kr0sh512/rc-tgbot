@@ -1,0 +1,6 @@
+telebot
+coloredlogs
+pyTelegramBotAPI
+python-dotenv
+pymongo
+sshtunnel
