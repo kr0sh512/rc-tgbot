@@ -2,6 +2,12 @@ import telebot
 import config
 import threading
 
+
+class BotCommands:
+    Start = ["start", "s"]
+    Help = ["help", "h"]
+
+
 bot = telebot.TeleBot(
     config.BOT_TOKEN,
     colorful_logs=True,

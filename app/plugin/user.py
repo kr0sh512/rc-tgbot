@@ -99,6 +99,14 @@ class User:
     def update_data(self):
         self._db.update({"_id": self.user_id}, self._into_json())
 
+    def delete(self):
+        self._db.delete({"_id": self.user_id})
+
+    def get_all() -> list["User"]:
+        users_data = User._db.find({})
+
+        return [User(data["_id"]) for data in users_data]
+
     def _save(self):
         if not self._db.exist({"_id": self.user_id}):
             self._db.insert(self._into_json())
@@ -107,7 +115,7 @@ class User:
 
     def _load(self):
         if not self._db.exist({"_id": self.user_id}):
-            return
+            raise ValueError("User not found")
 
         data = self._db.find_one({"_id": self.user_id})
         self._name = data["name"]

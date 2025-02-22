@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from sshtunnel import SSHTunnelForwarder
 from dotenv import load_dotenv
 
@@ -6,8 +7,8 @@ load_dotenv()
 
 
 class config:
-    BOT_TOKEN = os.environ.get("TOKEN")
-    API_KEY = os.environ.get("API_KEY")
+    DATE_START = datetime.strptime(os.environ.get("DATE_START"), "%Y-%m-%d").date()
+    BOT_TOKEN = os.environ.get("API_TOKEN")
     ADMIN_ID = os.environ.get("ADMIN_ID")
     ENV = os.getenv("ENV", "PROD")
 
@@ -25,16 +26,12 @@ class config:
         DB_PORT = server.local_bind_port
 
 
-class BotCommands:
-    Start = ["start", "s"]
-    Help = ["help", "h"]
-
-
 class Messages:
     WELCOME_LIST = [
         "Привет! Это бот  Quick dates (Random Coffee). Чтобы зарегистрироваться, пожалуйста, ответь на следующие вопросы."  # несколько сообщений подряд
     ]
-    ERROR = "An error occurred"
+    HELP = "Помощь"
+    ERROR = "Произошла ошибка"
     ENTER_NAME = "Как тебя зовут?"
     ENTER_AGE = "Сколько тебе лет?"
     ENTER_GENDER = "Выбери пол (женский, мужской)"

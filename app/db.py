@@ -20,3 +20,6 @@ class DB:
 
     def exist(self, query):
         return self.collection.find_one(query) is not None
+
+    def delete(self, query):
+        self.collection.delete_one(query)
