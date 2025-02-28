@@ -10,7 +10,7 @@ users_reg: List["User"] = []
 class User:
     _db = DB("Users")
 
-    def __init__(self, user_id, name):
+    def __init__(self, user_id, name=None):
         self.user_id: int = user_id
         self._name: str = name
         self._age: int = None
@@ -19,10 +19,6 @@ class User:
         self._group: str = None
         self._type: str = None
 
-        self._save()
-
-    def __init__(self, user_id):
-        self.user_id: int = user_id
         self._load()
 
     @property
@@ -121,7 +117,8 @@ class User:
 
     def _load(self):
         if not self._db.exist({"_id": self.user_id}):
-            raise ValueError("User not found")
+            self._save()
+            # raise ValueError("User not found")
 
         data = self._db.find_one({"_id": self.user_id})
         self._name = data["name"]
@@ -145,19 +142,20 @@ class User:
         for user in users:
             bot.send_message(user.user_id, Messages.MATCHING_START, reply_markup=markup)
 
-        @bot.callback_query_handler(func=lambda call: call.data == "shuffle_agree")
-        def add_user_to_reg(call: types.CallbackQuery):
-            user = User(call.message.chat.id)
-            users_reg.append(user)
+        return
 
-            bot.edit_message_text(
-                call.message.chat.id,
-                call.message.message_id,
-                "Вы добавлены в список участников! Пожалуйста, подождите, пока все зарегистрируются",
-                reply_markup=None,
-            )
+    @staticmethod
+    @bot.callback_query_handler(func=lambda call: call.data == "shuffle_agree")
+    def add_user_to_reg(call: types.CallbackQuery):
+        user = User(call.message.chat.id)
+        users_reg.append(user)
 
-            return
+        bot.edit_message_text(
+            call.message.chat.id,
+            call.message.message_id,
+            "Вы добавлены в список участников! Пожалуйста, подождите, пока все зарегистрируются",
+            reply_markup=None,
+        )
 
         return
 

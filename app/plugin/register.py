@@ -9,15 +9,26 @@ import re
 
 
 def start_reg_name(message: types.Message):
-    user = User(message.chat.id, message.text)
+    user = User(message.chat.id)
+    user.name = message.text
 
     bot.send_message(message.chat.id, Messages.ENTER_AGE)
 
     bot.register_next_step_handler(message, start_reg_age)
 
+    return
+
 
 def start_reg_age(message: types.Message):
     user = User(message.chat.id)
+
+    if not message.text.isdigit():
+        bot.send_message(message.chat.id, "Введите число")
+
+        bot.register_next_step_handler(message, start_reg_age)
+
+        return
+
     user.age = int(message.text)
 
     markup = types.InlineKeyboardMarkup()
@@ -25,9 +36,9 @@ def start_reg_age(message: types.Message):
         types.InlineKeyboardButton(Messages.GENDER_WOMAN, callback_data="gender_woman"),
         types.InlineKeyboardButton(Messages.GENDER_MAN, callback_data="gender_man"),
     )
-    bot.send_message(message.chat.id, Messages.ENTER_GENDER)
+    bot.send_message(message.chat.id, Messages.ENTER_GENDER, reply_markup=markup)
 
-    bot.register_next_step_handler(message, start_reg_gender)
+    return
 
 
 @bot.callback_query_handler(func=lambda call: "gender" in call.data)
@@ -70,7 +81,7 @@ def start_reg_group(message: types.Message):
         Messages.REGISTRATION_CONFIRM.format(
             user.name,
             user.age,
-            user.gender,
+            "Парень" if user.gender == "man" else "Девушка",
             user.faculty,
             user.group,
         ),
@@ -128,12 +139,10 @@ def test_question(call: types.CallbackQuery):
         call.message.chat.id, call.message.message_id, reply_markup=None
     )
 
-    if len(user.type) == 4:
-        show_result(call.message)
-        return
-
     if call.data != "test_yes":
-        user.type += call.data.split("_")[-1]
+        user.type += TestMessages.TEST_QUESTIONS[len(user.type)]["answers"][
+            int(call.data[-1])
+        ][1]
 
         bot.edit_message_text(
             call.message.text
@@ -145,12 +154,21 @@ def test_question(call: types.CallbackQuery):
             call.message.message_id,
         )  # упростить
 
+    if len(user.type) == 4:
+        show_result(call.message)
+        return
+
     question = TestMessages.TEST_QUESTIONS[len(user.type)]
+    text = question["question"]
     markup = types.InlineKeyboardMarkup()
-    for answer in question["answers"]:
-        markup.add(
-            types.InlineKeyboardButton(answer[0], callback_data=f"test_{answer[1]}")
-        )
+    markup.add(
+        types.InlineKeyboardButton("Первый вариант", callback_data=f"test_0"),
+        types.InlineKeyboardButton("Второй вариант", callback_data=f"test_1"),
+    )
+
+    text += f"\n\n1. {question['answers'][0][0]} \n\n2. {question['answers'][1][0]}"
+
+    bot.send_message(call.message.chat.id, text, reply_markup=markup)
 
     return
 

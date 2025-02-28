@@ -1,5 +1,5 @@
 from db import DB
-import config
+from config import config
 import os
 import threading
 import time
@@ -34,17 +34,21 @@ class Admin:
 
     @staticmethod
     def get_all_admins():
-        return Admin._db.find({})
+        return [
+            Admin(data["user_id"]) for data in Admin._db.find({}) if "user_id" in data
+        ]
 
     @staticmethod
     def is_admin(user_id):
-        return Admin._db.find({"user_id": user_id}) is not None
+        return (Admin._db.find_one({"user_id": user_id}) is not None) or (
+            user_id == config.ADMIN_ID
+        )
 
     @staticmethod
     def add_admin(new_user_id, name, unique_key) -> int:
         key_data = Admin._db.find_one({"unique_key": unique_key})
 
-        if new_user_id == config.ADMIN_ID and not Admin.is_admin(new_user_id):
+        if new_user_id == config.ADMIN_ID:
             Admin._db.insert({"user_id": new_user_id, "name": name})
 
             return new_user_id
@@ -341,16 +345,25 @@ class Admin:
 
         return
 
+    @bot.message_handler(commands=["r", "restart"])
+    @admin_only
+    def restart_command(message):
+        # os.system("python3 main.py")
+        os._exit(0)
+
+        return
+
 
 class AdminMessages:
     ADMIN_HELP = (
         "Вы администратор! Вот что вы можете сделать:\n"
         "/remove_admin - удалить админа\n"
-        "/generate_key - сгенерировать уникальный ключ (<code>admin_red</code> - чтобы админ добавился)\n"
+        "/generate_key - сгенерировать уникальный ключ (<code>admin_reg</code> - чтобы админ добавился)\n"
         "/delete_user - удалить пользователя\n"
         "/stats - статистика\n"
         "/send_message - отправить всем сообщение\n"
         "/random - зарандомить людей для 1 тура\n"
         "/random_again - зарандомить людей без повторной регистрации\n"
         "<code>clear_all</code> - удаляет ВСЕХ пользователей для их повторной регистрации\n"
+        "/restart - перезапуск бота"
     )

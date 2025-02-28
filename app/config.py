@@ -12,7 +12,7 @@ class config:
         "%Y-%m-%d-%H:%M",
     )
     API_TOKEN = os.environ.get("API_TOKEN")
-    ADMIN_ID = os.environ.get("ADMIN_ID")
+    ADMIN_ID = int(os.environ.get("ADMIN_ID"))
     ENV = os.getenv("ENV", "PROD")
 
     DB_PORT = int(os.getenv("DB_PORT", 27017))
@@ -37,6 +37,7 @@ class Messages:
         "Доступные команды:" "\n/start - начать регистрацию",
         "\n/help - помощь",
         "\n/source - исходный код бота на Github",
+        "\n@more_logical - для всех вопросов по мероприятию",
         "\n\nCreated by АйТи блок ВМК with love ❤️",
         # "Начало мероприятия: {} \nЭто через целых {} минут!",
     ]

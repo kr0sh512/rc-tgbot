@@ -42,7 +42,7 @@ def start_message(message: types.Message):
             Messages.REGISTRATION_CONFIRM.format(
                 user.name,
                 user.age,
-                user.gender,
+                "Парень" if user.gender == "man" else "Девушка",
                 user.faculty,
                 user.group,
             ),
@@ -82,8 +82,27 @@ def source(message: types.Message):
     return
 
 
+@bot.message_handler(func=lambda message: True)
+def handle_all_messages(message: types.Message):
+    help_message(message)
+
+
 if __name__ == "__main__":
     print("/t--- Bot started ---")
+
+    admins = Admin.get_all_admins()
+    for admin in admins:
+        bot.send_message(
+            admin["user_id"],
+            "Служебное сообщение: бот был перезапущен.",
+        )
+
+    # Test connection to the database
+    try:
+        User.get_all()
+        print("Database connection successful.")
+    except Exception as e:
+        print(f"Database connection failed: {e}")
 
     time_for_notif = config.DATE_START
 
@@ -103,5 +122,3 @@ if __name__ == "__main__":
                     "Отправлено напоминание о скором начале мероприятия.",
                 )
         time.sleep(10)
-
-    exit()

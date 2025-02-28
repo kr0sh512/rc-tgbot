@@ -3,17 +3,19 @@ from config import config
 
 
 class DB:
-    client = pymongo.MongoClient(f"mongodb://localhost:{config.DB_PORT}/")
+    client = pymongo.MongoClient(f"mongodb://mongo:{config.DB_PORT}/")
     db = client["rc_coffee"]
 
     def __init__(self, collection):
+        if collection not in self.db.list_collection_names():
+            self.db.create_collection(collection)
         self.collection = self.db[collection]
 
     def insert(self, data):
         self.collection.insert_one(data)
 
     def find(self, query):
-        return self.collection.find(query)
+        return list(self.collection.find(query))
 
     def find_one(self, query):
         return self.collection.find_one(query)
