@@ -1,5 +1,5 @@
 import telebot
-import config
+from config import config
 import threading
 
 
@@ -9,7 +9,7 @@ class BotCommands:
 
 
 bot = telebot.TeleBot(
-    config.BOT_TOKEN,
+    config.API_TOKEN,
     colorful_logs=True,
 )
 

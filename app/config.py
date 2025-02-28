@@ -7,8 +7,11 @@ load_dotenv()
 
 
 class config:
-    DATE_START = datetime.strptime(os.environ.get("DATE_START"), "%Y-%m-%d").date()
-    BOT_TOKEN = os.environ.get("API_TOKEN")
+    DATE_START = datetime.strptime(
+        f'{os.environ.get("DATE_START")}-{os.environ.get("TIME_START")}',
+        "%Y-%m-%d-%H:%M",
+    )
+    API_TOKEN = os.environ.get("API_TOKEN")
     ADMIN_ID = os.environ.get("ADMIN_ID")
     ENV = os.getenv("ENV", "PROD")
 
@@ -30,7 +33,11 @@ class Messages:
     WELCOME_LIST = [
         "Привет! Это бот  Quick dates (Random Coffee). Чтобы зарегистрироваться, пожалуйста, ответь на следующие вопросы."  # несколько сообщений подряд
     ]
-    HELP = "Помощь"
+    HELPS = [
+        "Доступные команды:" "\n/start - начать регистрацию" "n/help - помощь",
+        "Начало мероприятия: {} \nЭто через целых {} минут!",
+    ]
+
     ERROR = "Произошла ошибка"
     ENTER_NAME = "Как тебя зовут?"
     ENTER_AGE = "Сколько тебе лет?"
@@ -47,3 +54,6 @@ class Messages:
         \nГруппа: {}\
         \n\nВсё верно?"
     ALREADY_REGISTERED = "Ты уже зарегистрирован. Хочешь изменить данные?"
+    MATCHING_START = (
+        "Мы начали подбор пар. Пожалуйста, подтверди, что ты находишься в аудитории"
+    )

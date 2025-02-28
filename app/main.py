@@ -8,6 +8,7 @@ from plugin.user import User
 from plugin.admin import Admin, AdminMessages
 from plugin.bot_instance import bot, BotCommands
 from plugin.register import start_reg_name
+from datetime import datetime, timedelta
 import time
 
 
@@ -61,14 +62,11 @@ def start_message(message: types.Message):
 
 @bot.message_handler(commands=BotCommands.Help)
 def help_message(message: types.Message):
-    bot.send_message(
-        message.chat.id,
-        (
-            Messages.HELP
-            if not Admin.is_admin(message.chat.id)
-            else AdminMessages.ADMIN_HELP
-        ),
-    )
+    if not Admin.is_admin(message.chat.id):
+        for msg in Messages.HELPS:
+            bot.send_message(message.chat.id, msg)
+    else:
+        bot.send_message(message.chat.id, AdminMessages.ADMIN_HELP, parse_mode="HTML")
 
     return
 
@@ -76,7 +74,23 @@ def help_message(message: types.Message):
 if __name__ == "__main__":
     print("/t--- Bot started ---")
 
+    time_for_notif = config.DATE_START
+
     while True:
+        if config.DATE_START - datetime.now() < timedelta(days=1):
+            users = User.get_all()
+            for user in users:
+                bot.send_message(
+                    user["user_id"],
+                    "Напоминание, что наше мероприятие пройдёт уже завтра! Следите за новостями)",
+                )
+
+            admins = Admin.get_all_admins()
+            for admin in admins:
+                bot.send_message(
+                    admin["user_id"],
+                    "Отправлено напоминание о скором начале мероприятия.",
+                )
         time.sleep(10)
 
     exit()

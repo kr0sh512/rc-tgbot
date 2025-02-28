@@ -9,3 +9,8 @@
 
 !/app/plugin
 !app/plugin/*
+
+app/bot.py
+
+__pycache__/
+.env

@@ -1,4 +1,10 @@
 from db import DB
+from plugin.bot_instance import bot
+from config import Messages
+from telebot import types
+from typing import List, Tuple
+
+users_reg: List["User"] = []
 
 
 class User:
@@ -119,11 +125,41 @@ class User:
 
         data = self._db.find_one({"_id": self.user_id})
         self._name = data["name"]
+
         self._age = data["age"]
         self._gender = data["gender"]
         self._faculty = data["faculty"]
         self._group = data["group"]
         self._type = data["type"]
+
+    @staticmethod
+    def start_shuffle_reg():
+        users_reg.clear()
+        users = [user for user in User.get_all() if user.type]
+
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton("Я тут!", callback_data="shuffle_agree"),
+        )
+
+        for user in users:
+            bot.send_message(user.user_id, Messages.MATCHING_START, reply_markup=markup)
+
+        @bot.callback_query_handler(func=lambda call: call.data == "shuffle_agree")
+        def add_user_to_reg(call: types.CallbackQuery):
+            user = User(call.message.chat.id)
+            users_reg.append(user)
+
+            bot.edit_message_text(
+                call.message.chat.id,
+                call.message.message_id,
+                "Вы добавлены в список участников! Пожалуйста, подождите, пока все зарегистрируются",
+                reply_markup=None,
+            )
+
+            return
+
+        return
 
     def __str__(self):
         text = [f"{var}: {vars(self)[var]}" for var in vars(self) if var]

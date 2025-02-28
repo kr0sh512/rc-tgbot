@@ -1,7 +1,10 @@
 from db import DB
 import config
+import os
+import threading
+import time
 from plugin.user import User
-from plugin.shuffle import Shuffle
+from plugin.shuffle import Shuffle, already_matched
 
 from plugin.bot_instance import bot
 
@@ -30,8 +33,12 @@ class Admin:
         return
 
     @staticmethod
+    def get_all_admins():
+        return Admin._db.find({})
+
+    @staticmethod
     def is_admin(user_id):
-        return Admin._db.find_one({"user_id": user_id}) is not None
+        return Admin._db.find({"user_id": user_id}) is not None
 
     @staticmethod
     def add_admin(new_user_id, name, unique_key) -> int:
@@ -206,8 +213,6 @@ class Admin:
         with open("admin_stats.txt", "rb") as f:
             bot.send_document(message.chat.id, f)
 
-        import os
-
         os.remove("stats.txt")
         os.remove("admin_stats.txt")
 
@@ -242,7 +247,7 @@ class Admin:
     def clear_all_command(message):
         bot.send_message(
             message.chat.id,
-            "Отправьте <code>delete all</code> для подтверждения",
+            "Отправьте <code>delete all</code> для подтверждения. \n\nВнимание, вы вряд ли хотите это делать.",
             parse_mode="HTML",
         )
 
@@ -263,8 +268,76 @@ class Admin:
     @bot.message_handler(commands=["random"])
     @admin_only
     def random_command(message):
-        users = User.get_all()
-        Shuffle(users)
+        already_matched.clear()
+
+        for admin in Admin.get_all_admins():
+            bot.send_message(
+                admin["user_id"],
+                "Отправлено приглашение пользователем. В данный момент подтвердило участие 0 человек. Запускайте команду /end_random для завершения регистрации",
+            )
+
+        User.start_shuffle_reg()
+
+        def monitor_participation():
+            while True:
+                participants = len(already_matched)
+                bot.send_message(
+                    message.chat.id,
+                    f"В данный момент подтвердило участие {participants} человек",
+                )
+                time.sleep(5)
+
+        thread = threading.Thread(
+            target=monitor_participation, name="monitor_participation"
+        )
+        thread.start()
+
+        return
+
+    @bot.message_handler(commands=["end_random", "random_again"])
+    @admin_only
+    def end_random_command(message):
+        for thread in threading.enumerate():
+            if thread.name == "monitor_participation":
+                thread.kill()
+
+        bot.send_message(message.chat.id, "Регистрация завершена. Ожидайте")
+
+        pairs = Shuffle()
+        for pair in pairs:
+            if pair[1]:
+                bot.send_message(
+                    pair[0].user_id,
+                    f"Ваша пара: {pair[1].name}. Парта находится под номером: {pairs.index(pair) + 1})",
+                )
+                bot.send_message(
+                    pair[1].user_id,
+                    f"Ваша пара: {pair[0].name}. Парта находится под номером: {pairs.index(pair) + 1})",
+                )
+            else:
+                bot.send_message(
+                    pair[0].user_id,
+                    "Подойди к организаторам мероприятия, они тебе подберут идеальную пару!",
+                )
+
+        with open("pairs.txt", "w") as f:
+            str_pair = ""
+            for pair in pairs:
+                str_pair += (
+                    f"Парта {pairs.index(pair) + 1}: {pair[0].name} | {pair[1].name}\n"
+                )
+
+            f.write(str_pair)
+
+        with open("pairs.txt", "rb") as f:
+            for admin in Admin.get_all_admins():
+                bot.send_document(
+                    admin["user_id"],
+                    f,
+                    caption="Распредение по парам.",
+                )
+
+        os.remove("pairs.txt")
 
         return
 
@@ -273,10 +346,11 @@ class AdminMessages:
     ADMIN_HELP = (
         "Вы администратор! Вот что вы можете сделать:\n"
         "/remove_admin - удалить админа\n"
-        "/generate_key - сгенерировать уникальный ключ"
-        "/delete_user - удалить пользователя"
-        "/stats - статистика"
-        "/send_message - отправить всем сообщение"
-        "/random - зарандомить людей для 1 тура"
-        "clear_all - удаляет ВСЕХ пользователей"
+        "/generate_key - сгенерировать уникальный ключ\n"
+        "/delete_user - удалить пользователя\n"
+        "/stats - статистика\n"
+        "/send_message - отправить всем сообщение\n"
+        "/random - зарандомить людей для 1 тура\n"
+        "/random_again - зарандомить людей без повторной регистрации\n"
+        "<code>clear_all</code> - удаляет ВСЕХ пользователей для их повторной регистрации\n"
     )

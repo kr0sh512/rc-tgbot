@@ -6,12 +6,12 @@ services:
     container_name: python_bot
     working_dir: /usr/src/app
     volumes:
-      - .:/usr/src/app
+      - ./app:/usr/src/app
     networks:
       - rc_network
     depends_on:
       - mongodb
-    command: sh -c "pip install -r requirements.txt && python bot.py"
+    command: sh -c "pip install -r requirements.txt && python main.py"
 
   mongodb:
     image: mongo:latest

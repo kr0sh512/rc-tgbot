@@ -4,6 +4,8 @@ from config import Messages
 from plugin.test import TestMessages
 
 from plugin.bot_instance import bot
+import os
+import re
 
 
 def start_reg_name(message: types.Message):
@@ -159,11 +161,24 @@ def show_result(message: types.Message):
         TestMessages.TEST_RESULTS[user.type][0],
         TestMessages.TEST_RESULTS[user.type][1],
     )
-    bot.send_photo(
-        message.chat.id,
-        open(f"pics/{user.type}.jpg", "rb"),
-        caption=text,
-    )
+
+    directory = "pics/"
+    pattern = re.compile(f"{user.type}.*\.(jpg|jpeg|png|gif)$", re.IGNORECASE)
+
+    image_path = None
+    for filename in os.listdir(directory):
+        if pattern.match(filename):
+            image_path = os.path.join(directory, filename)
+            break
+
+    if image_path:
+        bot.send_photo(
+            message.chat.id,
+            open(image_path, "rb"),
+            caption=text,
+        )
+    else:
+        print("Image not found")
 
     bot.send_message(message.chat.id, TestMessages.TEST_FINISH)
 

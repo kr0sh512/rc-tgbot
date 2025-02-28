@@ -15,6 +15,9 @@ class DB:
     def find(self, query):
         return self.collection.find(query)
 
+    def find_one(self, query):
+        return self.collection.find_one(query)
+
     def update(self, query, data):
         self.collection.update_one(query, {"$set": data})
 
