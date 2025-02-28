@@ -176,10 +176,12 @@ def show_result(message: types.Message):
             message.chat.id,
             open(image_path, "rb"),
             caption=text,
+            show_caption_above_media=True,
         )
     else:
         print("Image not found")
 
     bot.send_message(message.chat.id, TestMessages.TEST_FINISH)
+    bot.send_message(message.chat.id, Messages.START_DATE)
 
     return

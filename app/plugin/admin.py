@@ -115,7 +115,7 @@ class Admin:
 
         return wrapper
 
-    @bot.message_handler(commands=["admin"])
+    @bot.message_handler(commands=["admin_reg"])
     def add_admin_command(message):
         bot.send_message(message.chat.id, "Введите unique_key")
         bot.register_next_step_handler(message, Admin.add_admin_step)
@@ -346,7 +346,7 @@ class AdminMessages:
     ADMIN_HELP = (
         "Вы администратор! Вот что вы можете сделать:\n"
         "/remove_admin - удалить админа\n"
-        "/generate_key - сгенерировать уникальный ключ\n"
+        "/generate_key - сгенерировать уникальный ключ (<code>admin_red</code> - чтобы админ добавился)\n"
         "/delete_user - удалить пользователя\n"
         "/stats - статистика\n"
         "/send_message - отправить всем сообщение\n"

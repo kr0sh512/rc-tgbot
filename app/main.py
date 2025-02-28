@@ -71,6 +71,17 @@ def help_message(message: types.Message):
     return
 
 
+@bot.message_handler(commands=BotCommands.Source)
+def source(message: types.Message):
+    bot.send_message(
+        message.chat.id,
+        "[Страничка бота на Github!](https://github.com/kr0sh512/rc-tgbot)",
+        parse_mode="Markdown",
+    )
+
+    return
+
+
 if __name__ == "__main__":
     print("/t--- Bot started ---")
 
