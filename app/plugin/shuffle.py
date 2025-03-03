@@ -11,7 +11,7 @@ def Shuffle() -> List[Tuple[User, User]]:
     pairs = []
 
     if len(users) % 2 != 0:
-        pairs.append((users.pop(),))
+        pairs.append((users.pop(), None))
 
     # Step 1: Match men with women by compatibility and age
     for user in users:

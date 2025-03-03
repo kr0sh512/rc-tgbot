@@ -1,7 +1,3 @@
-import os
-import sys
-import telebot
-import threading
 from config import config, Messages
 from telebot import types
 from plugin.user import User
@@ -88,12 +84,19 @@ def handle_all_messages(message: types.Message):
 
 
 if __name__ == "__main__":
-    print("/t--- Bot started ---")
+    print("\t--- Bot started ---")
 
     admins = Admin.get_all_admins()
+
+    print(admins)
+
+    print(Admin._db.find({}))
+
+    print([(data, "user_id" in data) for data in Admin._db.find({})])
+
     for admin in admins:
         bot.send_message(
-            admin["user_id"],
+            admin.user_id,
             "Служебное сообщение: бот был перезапущен.",
         )
 
@@ -111,14 +114,20 @@ if __name__ == "__main__":
             users = User.get_all()
             for user in users:
                 bot.send_message(
-                    user["user_id"],
+                    user.user_id,
                     "Напоминание, что наше мероприятие пройдёт уже завтра! Следите за новостями)",
                 )
+
+                if len(user.type) != 4:
+                    bot.send_message(
+                        user.user_id,
+                        "Вы ещё не прошли тест! Пожалуйста, пройдите его, чтобы мы могли вас зарегистрировать.",
+                    )
 
             admins = Admin.get_all_admins()
             for admin in admins:
                 bot.send_message(
-                    admin["user_id"],
+                    admin.user_id,
                     "Отправлено напоминание о скором начале мероприятия.",
                 )
         time.sleep(10)

@@ -3,7 +3,7 @@ from config import config
 import os
 import threading
 import time
-from plugin.user import User
+from plugin.user import User, users_reg
 from plugin.shuffle import Shuffle, already_matched
 
 from plugin.bot_instance import bot
@@ -26,7 +26,7 @@ class Admin:
         data = self._db.find_one({"user_id": self.user_id})
         if data:
             self.name = data["name"]
-            self.added_by = data["added_by"]
+            self.added_by = data.get("added_by")
         else:
             raise ValueError("Admin not found")
 
@@ -109,6 +109,7 @@ class Admin:
     # ----------------- TELEBOT ----------------- #
 
     def admin_only(func):
+
         def wrapper(message, *args, **kwargs):
             if Admin.is_admin(message.chat.id):
                 return func(message, *args, **kwargs)
@@ -276,40 +277,34 @@ class Admin:
 
         for admin in Admin.get_all_admins():
             bot.send_message(
-                admin["user_id"],
-                "Отправлено приглашение пользователем. В данный момент подтвердило участие 0 человек. Запускайте команду /end_random для завершения регистрации",
+                admin.user_id,
+                "Отправлено приглашение пользователем. В данный момент подтвердило участие 0 человек.\
+                    \n/update чтобы узнать, сколько уже подтвердило участие\
+                    \n/end_random для завершения регистрации",
             )
 
         User.start_shuffle_reg()
 
-        def monitor_participation():
-            while True:
-                participants = len(already_matched)
-                bot.send_message(
-                    message.chat.id,
-                    f"В данный момент подтвердило участие {participants} человек",
-                )
-                time.sleep(5)
+        return
 
-        thread = threading.Thread(
-            target=monitor_participation, name="monitor_participation"
+    @bot.message_handler(commands=["update"])
+    @admin_only
+    def update_random_command(message):
+        bot.send_message(
+            message.chat.id,
+            f"Подтвердило участие: {len(users_reg)} человек",
         )
-        thread.start()
 
         return
 
     @bot.message_handler(commands=["end_random", "random_again"])
     @admin_only
     def end_random_command(message):
-        for thread in threading.enumerate():
-            if thread.name == "monitor_participation":
-                thread.kill()
-
         bot.send_message(message.chat.id, "Регистрация завершена. Ожидайте")
 
         pairs = Shuffle()
         for pair in pairs:
-            if pair[1]:
+            if len(pair) == 2:
                 bot.send_message(
                     pair[0].user_id,
                     f"Ваша пара: {pair[1].name}. Парта находится под номером: {pairs.index(pair) + 1})",
@@ -327,16 +322,19 @@ class Admin:
         with open("pairs.txt", "w") as f:
             str_pair = ""
             for pair in pairs:
-                str_pair += (
-                    f"Парта {pairs.index(pair) + 1}: {pair[0].name} | {pair[1].name}\n"
-                )
+                if len(pair) == 2:
+                    str_pair += f"Парта {pairs.index(pair) + 1}: {pair[0].name} | {pair[1].name}\n"
+                else:
+                    str_pair += (
+                        f"Парта {pairs.index(pair) + 1}: {pair[0].name} | Нет пары\n"
+                    )
 
             f.write(str_pair)
 
         with open("pairs.txt", "rb") as f:
             for admin in Admin.get_all_admins():
                 bot.send_document(
-                    admin["user_id"],
+                    admin.user_id,
                     f,
                     caption="Распредение по парам.",
                 )

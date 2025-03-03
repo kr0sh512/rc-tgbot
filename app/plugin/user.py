@@ -2,7 +2,7 @@ from db import DB
 from plugin.bot_instance import bot
 from config import Messages
 from telebot import types
-from typing import List, Tuple
+from typing import List
 
 users_reg: List["User"] = []
 
@@ -132,7 +132,7 @@ class User:
     @staticmethod
     def start_shuffle_reg():
         users_reg.clear()
-        users = [user for user in User.get_all() if user.type]
+        users = [user for user in User.get_all() if len(user.type) == 4]
 
         markup = types.InlineKeyboardMarkup()
         markup.add(
@@ -151,9 +151,9 @@ class User:
         users_reg.append(user)
 
         bot.edit_message_text(
+            "Вы добавлены в список участников! Пожалуйста, подождите, пока все зарегистрируются",
             call.message.chat.id,
             call.message.message_id,
-            "Вы добавлены в список участников! Пожалуйста, подождите, пока все зарегистрируются",
             reply_markup=None,
         )
 
