@@ -15,8 +15,6 @@ services:
 
   mongodb:
     image: 'mongo:4.4.6'
-    ports:
-      - '27017:27017'
     volumes:
       - 'mongo-data:/data/db'
     restart: unless-stopped
