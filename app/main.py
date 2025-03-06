@@ -71,7 +71,7 @@ def help_message(message: types.Message):
 def source(message: types.Message):
     bot.send_message(
         message.chat.id,
-        "[Страничка бота на Github!](https://github.com/kr0sh512/rc-tgbot)\n\nСтарался раб профкомский [Дмитрий](https://t.me/kr0sh_512)",
+        "[Страничка бота на Github!](https://github.com/kr0sh512/rc-tgbot)\n\nСтарался раб профкомский [Дмитрий](https://t.me/kr0sh_512). mewow.",
         parse_mode="Markdown",
     )
 

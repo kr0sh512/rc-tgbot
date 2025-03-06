@@ -144,12 +144,12 @@ def test_question(call: types.CallbackQuery):
             int(call.data[-1])
         ][1]
 
+        user_ans = int(call.data[-1])
+        question_last = TestMessages.TEST_QUESTIONS[len(user.type) - 1]
+        text_edit = f"{question_last['question']}\n\n{"✅ " if user_ans == 0 else ""}1. {question_last['answers'][0][0]} \n\n{"✅ " if user_ans == 1 else ""}2. {question_last['answers'][1][0]}"
+
         bot.edit_message_text(
-            call.message.text
-            + "\n\n"
-            + TestMessages.TEST_QUESTIONS[len(user.type) - 1]["answers"][
-                int(call.data[-1])
-            ][0],
+            text_edit,
             call.message.chat.id,
             call.message.message_id,
         )  # упростить
@@ -159,14 +159,12 @@ def test_question(call: types.CallbackQuery):
         return
 
     question = TestMessages.TEST_QUESTIONS[len(user.type)]
-    text = question["question"]
+    text = f"{question['question']}\n\n1. {question['answers'][0][0]} \n\n2. {question['answers'][1][0]}"
     markup = types.InlineKeyboardMarkup()
     markup.add(
         types.InlineKeyboardButton("Первый вариант", callback_data=f"test_0"),
         types.InlineKeyboardButton("Второй вариант", callback_data=f"test_1"),
     )
-
-    text += f"\n\n1. {question['answers'][0][0]} \n\n2. {question['answers'][1][0]}"
 
     bot.send_message(call.message.chat.id, text, reply_markup=markup)
 

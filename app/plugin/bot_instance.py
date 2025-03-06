@@ -15,14 +15,18 @@ original_send_message = telebot.TeleBot.send_message
 
 def send_message_with_try_catch(self, chat_id, text, *args, **kwargs):
     try:
-        return original_send_message(self, chat_id, text, *args, **kwargs)
+        return original_send_message(
+            self, chat_id, text, parse_mode="HTML", *args, **kwargs
+        )
     except Exception as e:
         print(f"Error sending message: {e}. Retrying in 5 seconds...")
 
         try:
             time.sleep(5)
 
-            return original_send_message(self, chat_id, text, *args, **kwargs)
+            return original_send_message(
+                self, chat_id, text, parse_mode="HTML" * args, **kwargs
+            )
         except Exception as e:
             print(f"Second attempt failed: {e}")
 
