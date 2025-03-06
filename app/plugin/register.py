@@ -146,7 +146,7 @@ def test_question(call: types.CallbackQuery):
 
         user_ans = int(call.data[-1])
         question_last = TestMessages.TEST_QUESTIONS[len(user.type) - 1]
-        text_edit = f"{question_last['question']}\n\n{"✅ " if user_ans == 0 else ""}1. {question_last['answers'][0][0]} \n\n{"✅ " if user_ans == 1 else ""}2. {question_last['answers'][1][0]}"
+        text_edit = f"{question_last['question']}\n\n{'✅ ' if user_ans == 0 else ''}1. {question_last['answers'][0][0]} \n\n{'✅ ' if user_ans == 1 else ''}2. {question_last['answers'][1][0]}"
 
         bot.edit_message_text(
             text_edit,
