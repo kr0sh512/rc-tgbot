@@ -202,7 +202,7 @@ class Admin:
             f.write("Количество пользователей: {}\n".format(len(users)))
 
             for user in users:
-                f.write(str(user) + "\n")
+                f.write(str(user) + "\n\n")
 
         with open("stats.txt", "rb") as f:
             bot.send_document(message.chat.id, f)
@@ -212,7 +212,7 @@ class Admin:
             f.write("Количество админов: {}\n".format(len(admins)))
 
             for admin in admins:
-                f.write(str(admin) + "\n")
+                f.write(str(admin) + "\n\n")
 
         with open("admin_stats.txt", "rb") as f:
             bot.send_document(message.chat.id, f)
@@ -277,8 +277,8 @@ class Admin:
             bot.send_message(
                 admin.user_id,
                 "Отправлено приглашение пользователем. В данный момент подтвердило участие 0 человек.\
-                    \n/update чтобы узнать, сколько уже подтвердило участие\
-                    \n/end_random для завершения регистрации",
+                    \n\n/update чтобы узнать, сколько уже подтвердило участие\
+                    \n\n/end_random для завершения регистрации",
             )
 
         User.start_shuffle_reg()
@@ -302,7 +302,7 @@ class Admin:
 
         pairs = Shuffle()
         for pair in pairs:
-            if len(pair) == 2:
+            if pair[1]:
                 bot.send_message(
                     pair[0].user_id,
                     f"Твоя пара: {pair[1].name}\n\nНомер парты: {pairs.index(pair) + 1}\n\nХорошего знакомства 🥰",
@@ -321,23 +321,21 @@ class Admin:
                 )
 
         with open("pairs.txt", "w") as f:
-            str_pair = ""
             for pair in pairs:
-                if len(pair) == 2:
-                    str_pair += f"Парта {pairs.index(pair) + 1}: {pair[0].name} | {pair[1].name}\n"
+                if pair[1]:
+                    f.write(
+                        f"Парта {pairs.index(pair) + 1}: {pair[0].name} | {pair[1].name}\n"
+                    )
                 else:
-                    str_pair += (
+                    f.write(
                         f"Парта {pairs.index(pair) + 1}: {pair[0].name} | Нет пары\n"
                     )
 
-            f.write(str_pair)
-
-        with open("pairs.txt", "rb") as f:
-            for admin in Admin.get_all_admins():
+        for admin in Admin.get_all_admins():
+            with open("pairs.txt", "rb") as f:
                 bot.send_document(
                     admin.user_id,
                     f,
-                    caption="Распредение по парам.",
                 )
 
         os.remove("pairs.txt")
@@ -355,14 +353,15 @@ class Admin:
 
 class AdminMessages:
     ADMIN_HELP = (
-        "Вы администратор! Вот что вы можете сделать:\n"
-        "/remove_admin - удалить админа\n"
-        "/generate_key - сгенерировать уникальный ключ (<code>admin_reg</code> - чтобы админ добавился)\n"
-        "/delete_user - удалить пользователя\n"
-        "/stats - статистика\n"
-        "/send_message - отправить всем сообщение\n"
-        "/random - зарандомить людей для 1 тура\n"
-        "/random_again - зарандомить людей без повторной регистрации\n"
-        "<code>clear_all</code> - удаляет ВСЕХ пользователей для их повторной регистрации\n"
-        "/restart - перезапуск бота"
+        "Вы администратор! Вот что вы можете сделать:\n\n"
+        "/remove_admin - удалить админа\n\n"
+        "/generate_key - сгенерировать уникальный ключ (<code>admin_reg</code> - чтобы админ добавился)\n\n"
+        "/delete_user - удалить пользователя\n\n"
+        "/stats - статистика\n\n"
+        "/send_message - отправить всем сообщение\n\n"
+        "/random - зарандомить людей для 1 тура\n\n"
+        "/random_again - зарандомить людей без повторной регистрации\n\n"
+        "<code>clear_all</code> - удаляет ВСЕХ пользователей для их повторной регистрации\n\n"
+        "/restart - перезапуск бота\n\n"
+        "/source - исходный код бота на Github"
     )
