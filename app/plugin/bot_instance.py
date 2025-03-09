@@ -38,6 +38,7 @@ telebot.TeleBot.send_message = send_message_with_try_catch
 bot = telebot.TeleBot(
     config.API_TOKEN,
     colorful_logs=True,
+    parse_mode="HTML",
 )
 
 threading.Thread(

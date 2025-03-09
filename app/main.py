@@ -62,7 +62,7 @@ def help_message(message: types.Message):
         for msg in Messages.HELPS:
             bot.send_message(message.chat.id, msg)
     else:
-        bot.send_message(message.chat.id, AdminMessages.ADMIN_HELP, parse_mode="HTML")
+        bot.send_message(message.chat.id, AdminMessages.ADMIN_HELP)
 
     return
 
@@ -71,8 +71,10 @@ def help_message(message: types.Message):
 def source(message: types.Message):
     bot.send_message(
         message.chat.id,
-        "[Страничка бота на Github!](https://github.com/kr0sh512/rc-tgbot)\n\nСтарался раб профкомский [Дмитрий](https://t.me/kr0sh_512). mewow.",
-        parse_mode="Markdown",
+        (
+            "<a href='https://github.com/kr0sh512/rc-tgbot'>Страничка бота на Github!</a>"
+            "\n\nСтарался раб профкомский <a href='https://t.me/kr0sh_512'>Дмитрий</a>. mewow."
+        ),
     )
 
     return

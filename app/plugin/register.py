@@ -152,6 +152,7 @@ def test_question(call: types.CallbackQuery):
             text_edit,
             call.message.chat.id,
             call.message.message_id,
+            parse_mode="HTML",
         )  # упростить
 
     if len(user.type) == 4:

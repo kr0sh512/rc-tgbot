@@ -132,7 +132,7 @@ class User:
     @staticmethod
     def start_shuffle_reg():
         users_reg.clear()
-        users = [user for user in User.get_all() if len(user.type) == 4]
+        users = [user for user in User.get_all() if (user.type and len(user.type) == 4)]
 
         markup = types.InlineKeyboardMarkup()
         markup.add(

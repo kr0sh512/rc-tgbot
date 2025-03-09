@@ -152,7 +152,6 @@ class Admin:
             bot.send_message(
                 message.chat.id,
                 "Ваш ключ: <code>{}</code>".format(key),
-                parse_mode="HTML",
             )
         except Exception as e:
             bot.send_message(message.chat.id, str(e))
@@ -253,7 +252,6 @@ class Admin:
         bot.send_message(
             message.chat.id,
             "Отправьте <code>delete all</code> для подтверждения. \n\nВнимание, вы вряд ли хотите это делать.",
-            parse_mode="HTML",
         )
 
         return
