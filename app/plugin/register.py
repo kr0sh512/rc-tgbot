@@ -6,6 +6,7 @@ from plugin.test import TestMessages
 from plugin.bot_instance import bot
 import os
 import re
+import random
 
 
 def start_reg_name(message: types.Message):
@@ -73,29 +74,47 @@ def start_reg_group(message: types.Message):
 
     markup = types.InlineKeyboardMarkup()
     markup.add(
+        types.InlineKeyboardButton("Согласен", callback_data="upload_agree"),
+        types.InlineKeyboardButton("Не согласен", callback_data="upload_skip"),
+    )
+    bot.send_message(message.chat.id, Messages.ENTER_AGREE_UPLOAD, reply_markup=markup)
+
+    return
+
+
+@bot.callback_query_handler(func=lambda call: "upload" in call.data)
+def start_agree_upload(call: types.CallbackQuery):
+    user = User(call.message.chat.id)
+    user.agree_upload = call.data.split("_")[-1] == "agree"
+
+    bot.edit_message_text(
+        (
+            "Согласен на сохранение данных в общую базу"
+            if user.agree_upload
+            else "Не согласен на сохранение данных в общую базу"
+        ),
+        call.message.chat.id,
+        call.message.message_id,
+        reply_markup=None,
+    )
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(
         types.InlineKeyboardButton("Всё верно!", callback_data="registration_confirm"),
         types.InlineKeyboardButton("Изменить", callback_data="registration_change"),
     )
     bot.send_message(
-        message.chat.id,
+        call.message.chat.id,
         Messages.REGISTRATION_CONFIRM.format(
             user.name,
             user.age,
             "Парень" if user.gender == "man" else "Девушка",
             user.faculty,
             user.group,
+            "Да" if user.agree_upload else "Нет",
         ),
         reply_markup=markup,
     )
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "registration_skip")
-def start_skip_reg(call: types.CallbackQuery):
-    bot.edit_message_reply_markup(
-        call.message.chat.id, call.message.message_id, reply_markup=None
-    )
-
-    return
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "registration_change")
@@ -139,37 +158,100 @@ def test_question(call: types.CallbackQuery):
         call.message.chat.id, call.message.message_id, reply_markup=None
     )
 
-    if call.data != "test_yes":
-        user.type += TestMessages.TEST_QUESTIONS[len(user.type)]["answers"][
-            int(call.data[-1])
-        ][1]
+    if call.data == "test_yes":
+        last_q = -1
+    else:
+        last_q = int(call.data.split("_")[1].split("#")[0])
+        previous_ans = int(call.data.split("#")[1])
+        for ans_type in TestMessages.TEST_QUESTIONS[last_q]["answers"][previous_ans][
+            "types"
+        ]:
+            add_score = 3 if last_q == 0 else 2
+            user.vector_type[ans_type] = user.vector_type.get(ans_type, 0) + add_score
 
-        user_ans = int(call.data[-1])
-        question_last = TestMessages.TEST_QUESTIONS[len(user.type) - 1]
-        text_edit = f"{question_last['question']}\n\n{'✅ ' if user_ans == 0 else ''}1. {question_last['answers'][0][0]} \n\n{'✅ ' if user_ans == 1 else ''}2. {question_last['answers'][1][0]}"
+        prev_answ = "\n\n".join(
+            [
+                f"{'✅ ' if i == previous_ans else ''}{i+1}. {ans['text']}"
+                for i, ans in enumerate(TestMessages.TEST_QUESTIONS[last_q]["answers"])
+            ]
+        )
+
+        prev_text = f"{TestMessages.TEST_QUESTIONS[last_q]['question']}\n\n{prev_answ}"
 
         bot.edit_message_text(
-            text_edit,
+            prev_text,
             call.message.chat.id,
             call.message.message_id,
             parse_mode="HTML",
-        )  # упростить
+        )
 
-    if len(user.type) == 4:
+    if last_q == len(TestMessages.TEST_QUESTIONS) - 1:
+        max_value = max(user.vector_type.values())
+        max_types = [t for t, v in user.vector_type.items() if v == max_value]
+        user.type = random.choice(max_types)
+
         show_result(call.message)
         return
 
-    question = TestMessages.TEST_QUESTIONS[len(user.type)]
-    text = f"{question['question']}\n\n1. {question['answers'][0][0]} \n\n2. {question['answers'][1][0]}"
-    markup = types.InlineKeyboardMarkup()
-    markup.add(
-        types.InlineKeyboardButton("Первый вариант", callback_data=f"test_0"),
-        types.InlineKeyboardButton("Второй вариант", callback_data=f"test_1"),
+    question = TestMessages.TEST_QUESTIONS[last_q + 1]
+    answ = "\n\n".join(
+        [f"{i+1}. {ans['text']}" for i, ans in enumerate(question["answers"])]
     )
+    text = f"{question['question']}\n\n{answ}"
 
-    bot.send_message(call.message.chat.id, text, reply_markup=markup)
+    markup = types.InlineKeyboardMarkup()
+    for i in range(len(question["answers"])):
+        markup.add(
+            types.InlineKeyboardButton(
+                f"{question['answers'][i]['short']}",
+                callback_data=f"test_{last_q + 1}#{i}",
+            )
+        )
+
+    bot.send_message(call.message.chat.id, text, reply_markup=markup, parse_mode="HTML")
 
     return
+
+
+# @bot.callback_query_handler(func=lambda call: "test" in call.data)
+# def test_question(call: types.CallbackQuery):
+#     user = User(call.message.chat.id)
+
+#     bot.edit_message_reply_markup(
+#         call.message.chat.id, call.message.message_id, reply_markup=None
+#     )
+
+#     if call.data != "test_yes":
+#         user.type += TestMessages.TEST_QUESTIONS[len(user.type)]["answers"][
+#             int(call.data[-1])
+#         ][1]
+
+#         user_ans = int(call.data[-1])
+#         question_last = TestMessages.TEST_QUESTIONS[len(user.type) - 1]
+#         text_edit = f"{question_last['question']}\n\n{'✅ ' if user_ans == 0 else ''}1. {question_last['answers'][0][0]} \n\n{'✅ ' if user_ans == 1 else ''}2. {question_last['answers'][1][0]}"
+
+#         bot.edit_message_text(
+#             text_edit,
+#             call.message.chat.id,
+#             call.message.message_id,
+#             parse_mode="HTML",
+#         )  # упростить
+
+#     if len(user.type) == 4:
+#         show_result(call.message)
+#         return
+
+#     question = TestMessages.TEST_QUESTIONS[len(user.type)]
+#     text = f"{question['question']}\n\n1. {question['answers'][0][0]} \n\n2. {question['answers'][1][0]}"
+#     markup = types.InlineKeyboardMarkup()
+#     markup.add(
+#         types.InlineKeyboardButton("Первый вариант", callback_data=f"test_0"),
+#         types.InlineKeyboardButton("Второй вариант", callback_data=f"test_1"),
+#     )
+
+#     bot.send_message(call.message.chat.id, text, reply_markup=markup)
+
+#     return
 
 
 def show_result(message: types.Message):

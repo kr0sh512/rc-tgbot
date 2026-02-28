@@ -18,6 +18,8 @@ class User:
         self._faculty: str = None
         self._group: str = None
         self._type: str = None
+        self._agree_upload: bool = None
+        self._vector_type: dict = None
 
         self._load()
 
@@ -87,6 +89,28 @@ class User:
 
         return self._type
 
+    @property
+    def agree_upload(self):
+        return self._agree_upload
+
+    @agree_upload.setter
+    def agree_upload(self, value):
+        self._agree_upload = value
+        self.update_data()
+
+        return self._agree_upload
+
+    @property
+    def vector_type(self):
+        return self._vector_type
+
+    @vector_type.setter
+    def vector_type(self, value):
+        self._vector_type = value
+        self.update_data()
+
+        return self._vector_type
+
     def _into_json(self):
         return {
             "_id": self.user_id,
@@ -96,6 +120,8 @@ class User:
             "faculty": self._faculty,
             "group": self._group,
             "type": self._type,
+            "agree_upload": self._agree_upload,
+            "vector_type": self._vector_type,
         }
 
     def update_data(self):
@@ -128,6 +154,8 @@ class User:
         self._faculty = data["faculty"]
         self._group = data["group"]
         self._type = data["type"]
+        self._agree_upload = data["agree_upload"]
+        self._vector_type = data["vector_type"]
 
     @staticmethod
     def start_shuffle_reg():

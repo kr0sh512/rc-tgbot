@@ -41,6 +41,7 @@ def start_message(message: types.Message):
                 "Парень" if user.gender == "man" else "Девушка",
                 user.faculty,
                 user.group,
+                "Да" if user.agree_upload else "Нет",
             ),
             reply_markup=markup,
         )
